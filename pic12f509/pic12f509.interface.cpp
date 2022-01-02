@@ -30,6 +30,7 @@ namespace pic12f509 {
     digitalWrite(this->pin_vdd, HIGH);
     delayMicroseconds(T_PPDP_US);
     digitalWrite(this->pin_vpp, HIGH);
+    delayMicroseconds(T_SET0_US);
     delayMicroseconds(T_HLD0_US);
     return this;
   };
@@ -37,6 +38,8 @@ namespace pic12f509 {
   Pic12f509Interface const * Pic12f509Interface::end() const {
     digitalWrite(this->pin_vdd, LOW);
     digitalWrite(this->pin_vpp, LOW);
+    // make the low effective
+    delayMicroseconds(1);
     return this;
   };
 
@@ -100,7 +103,7 @@ namespace pic12f509 {
   word_t Pic12f509Interface::get_word() const {
     word_t word = 0;
     // start bit
-    send_bit(0);
+    this->send_bit(0);
 
     pinMode(this->pin_data, INPUT);
     word_t p = 1;
@@ -115,8 +118,44 @@ namespace pic12f509 {
     pinMode(this->pin_data, OUTPUT);
 
     // stop bit
-    send_bit(0);
+    this->send_bit(0);
     return word;
   };
+
+  Pic12f509Interface const * Pic12f509Interface::send_word(word_t const & word) const {
+    // start bit
+    this->send_bit(0);
+
+    // send 12 bits
+    for (uint8_t i = 0 ; i<12; i++) {
+      this->send_bit((word >> i) % 2);
+    }
+
+    // send two don't care what bits
+    this->send_bit(0);
+    this->send_bit(0);
+
+    // stop bit
+    this->send_bit(0);
+    return this;
+  };
+
+
+  // configuration functions
+  uint8_t get_mclr_selection(const word_t & conf_word) {
+    return 0x10 & conf_word;
+  }
+
+  bool is_code_proctection_enabled(word_t const & conf_word) {
+    return !(bool)(0x08 & conf_word);
+  }
+
+  bool is_watchdog_timer_enabled(word_t const & conf_word) {
+    return 0x04 & conf_word;
+  }
+
+  uint8_t get_oscillator_selection(const word_t & conf_word) {
+    return 0x03 & conf_word;
+  }
 
 }
