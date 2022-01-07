@@ -36,15 +36,19 @@ namespace pic12f509 {
   const addr_t LOC_CONF_WORD = 0x07FF;
 
   // MCLRE
+  const uint8_t CONF_MCLRE_MASK = 0x10;
   const uint8_t CONF_MCLRE_MCLR = 0x10;
   const uint8_t CONF_MCLRE_GP3 = 0x00;
   // Code protection
+  const uint8_t CONF_CODE_PROTECTION_MASK = 0x08;
   const uint8_t CONF_CODE_PROTECTION_ON = 0x00;
   const uint8_t CONF_CODE_PROTECTION_OFF = 0x08;
   // Watchdog timer
+  const uint8_t CONF_WDTE_MASK = 0x04;
   const uint8_t CONF_WDTE_ON = 0x04;
   const uint8_t CONF_WDTE_OFF = 0x00;
   // Oscilator selection
+  const uint8_t CONF_OSC_SEL_MASK = 0x03;
   const uint8_t CONF_OSC_SEL_LP = 0x00;
   const uint8_t CONF_OSC_SEL_XP = 0x01;
   const uint8_t CONF_OSC_SEL_INTOSC = 0x02;
