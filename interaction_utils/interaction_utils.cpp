@@ -32,7 +32,7 @@ namespace interaction_utils {
       String pag_str = String(selected_option + 1) + " of " + num_options_str;
 
       this->lcd->clear();
-      this->lcd->setCursor(0, 0);
+      this->lcd->setCursor((16-this->options[selected_option].length())/2, 0);
       this->lcd->print(this->options[selected_option]);
       this->lcd->setCursor(0, 1);
       this->lcd->print("<");
@@ -42,22 +42,15 @@ namespace interaction_utils {
       this->lcd->print(pag_str);
 
       // wait input
-      uint16_t buttons = this->buttons->wait_press();
+      uint16_t pressed_button = this->buttons->wait_first_press();
 
       // determine action
-      for (uint8_t i = 0; i < this->num_options; i++) {
-        if (! (buttons % 2) ) {
-          // do nothing
-        } else if (i == confirm_button_index) {
-          is_option_selected = true;
-        } else if (i == next_button_index) {
-          selected_option = (selected_option + 1 ) % this->num_options;
-        } else if (i == prev_button_index) {
-          selected_option = (selected_option + this->num_options - 1 ) % this->num_options;
-        } else {
-          // Another button pressed
-        }
-        buttons = buttons >> 1;
+      if (pressed_button == confirm_button_index) {
+        is_option_selected = true;
+      } else if (pressed_button == next_button_index) {
+        selected_option = (selected_option + 1 ) % this->num_options;
+      } else if (pressed_button == prev_button_index) {
+        selected_option = (selected_option + this->num_options - 1 ) % this->num_options;
       }
     }
     return selected_option;
