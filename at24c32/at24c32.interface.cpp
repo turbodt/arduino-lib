@@ -100,13 +100,23 @@ namespace at24c32 {
     return ack;
   }
 
+  bool Interface::init(uint8_t const & rw_bit, uint8_t const & max_tries) const {
+    bool ack;
+    this->start();
+    ack = this->send_byte((this->device_addr << 1 ) | rw_bit);
+    for (uint8_t i = 1 ; ack && (!max_tries || i < max_tries); i++) {
+      delayMicroseconds(T_WR_US);
+      ack = this->send_byte((this->device_addr << 1 ) | rw_bit);
+    }
+    return ack;
+  }
+
   Interface const * Interface::send_word(
     addr_t const & addr,
     word_t const & word
   ) const {
     bool ack;
-    this->start();
-    ack = this->send_byte((this->device_addr << 1 ) | 0); // write bit
+    ack = this->init(WRITE);
     ack |= this->send_address(addr);
     ack |= this->send_byte(word);
     this->stop();
@@ -115,8 +125,7 @@ namespace at24c32 {
   }
 
   word_t Interface::get_word() const {
-    this->start();
-    this->send_byte((this->device_addr << 1 ) | 1); // read bit
+    this->init(READ);
     word_t word = this->get_byte();
     this->stop();
     return word;
@@ -124,9 +133,8 @@ namespace at24c32 {
 
   word_t Interface::get_word(addr_t const & addr) const {
     bool ack;
-    this->start();
     // perform "dummy writte"
-    ack = this->send_byte((this->device_addr << 1 ) | 0); // write bit
+    ack = this->init(WRITE);
     ack |= this->send_address(addr);
     this->prepare_restart();
     // perform actual read
@@ -134,16 +142,14 @@ namespace at24c32 {
   }
 
   Interface const * Interface::init_sequential_read() const {
-    this->start();
-    this->send_byte((this->device_addr << 1 ) | 1); // read bit
+    this->init(READ);
     return this;
   }
 
   Interface const * Interface::init_sequential_read(addr_t const & addr) const {
     bool ack;
-    this->start();
     // perform "dummy writte"
-    ack = this->send_byte((this->device_addr << 1 ) | 0); // write bit
+    ack = this->init(WRITE);
     ack |= this->send_address(addr);
     this->prepare_restart();
     this->init_sequential_read();
